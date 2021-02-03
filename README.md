@@ -1,6 +1,6 @@
-# principal-release-notes-action
+# handle-release-notes
 
-Very opiniated GitHub action to handle release notes and milestones via [github-release-notes](https://github.com/github-tools/github-release-notes).
+A very opiniated GitHub action to handle release notes and milestones via [github-release-notes](https://github.com/github-tools/github-release-notes).
 
 ## Usage
 
@@ -21,7 +21,7 @@ jobs:
       - name: Setup node/npm
         uses: actions/setup-node@v1
       - name: principal-post-release-action
-        uses: principalstudio/principal-release-notes-action@v1
+        uses: principalstudio/handle-release-notes@v1
         with:
           main-branch: master
 ```
