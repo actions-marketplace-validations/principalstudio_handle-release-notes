@@ -1,4 +1,4 @@
-name: 'principal-post-release-action'
+name: 'principalstudio-handle-release-notes'
 description: 'Very opiniated GitHub action to handle release notes and milestones'
 author: Principal Studio
 branding:
