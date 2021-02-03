@@ -1,5 +1,9 @@
 name: 'principal-post-release-action'
-description: ''
+description: 'Very opiniated GitHub action to handle release notes and milestones'
+author: Principal Studio
+branding:
+  icon: archive
+  color: gray-dark
 inputs:
   main-branch:
     description: 'Repo’s main branch'
