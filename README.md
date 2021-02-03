@@ -16,11 +16,11 @@ jobs:
     name: Update release
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: checkout
         uses: actions/checkout@v2
-      - name: Setup node/npm
+      - name: setup-node
         uses: actions/setup-node@v1
-      - name: principal-post-release-action
+      - name: handle-release-notes
         uses: principalstudio/handle-release-notes@v1
         with:
           main-branch: master
