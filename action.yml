@@ -1,0 +1,75 @@
+name: 'principal-post-release-action'
+description: ''
+inputs:
+  main-branch:
+    description: 'Repo’s main branch'
+    required: true
+    default: 'main'
+runs:
+  using: "composite"
+  steps:
+    - run: npm install github-release-notes -g
+      shell: bash
+    - run: |
+        sudo apt-get update -y
+        sudo apt-get install -y jq
+      shell: bash
+    - run: gren release --override
+      env:
+        GREN_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      shell: bash
+    - run: gren changelog --override
+      env:
+        GREN_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      shell: bash
+    - run: |
+        CURRENT_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+        git config --global user.email 'github-actions-git-commit@users.noreply.github.com'
+        git config --global user.name 'Github Actions'
+        git fetch
+        git checkout ${{ inputs.main-branch }}
+        git add CHANGELOG.md
+        git commit -m 'Update CHANGELOG via github-release-notes'
+        git tag $CURRENT_TAG -f -m 'Force moving tag to include CHANGELOG in release'
+        git push && git push --tags -f
+
+        MILESTONES_URL=https://api.github.com/repos/${{ github.repository }}/milestones
+        MILESTONES_JSON=$(curl --header "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" $MILESTONES_URL)
+
+        for row in $(echo "${MILESTONES_JSON}" | jq -r '.[] | @base64'); do
+          _jq() {
+            echo ${row} | base64 --decode | jq -r ${1}
+          }
+
+          RELEASE_TITLE=$(_jq '.title')
+          RELEASE_URL=$(_jq '.url')
+          OPEN_ISSUES=$(_jq '.open_issues')
+          CURRENT_RELEASE="Release $CURRENT_TAG"
+
+          if [ "$RELEASE_TITLE" = "$CURRENT_RELEASE" ] && [ $OPEN_ISSUES -eq 0 ]; then
+            curl --request PATCH \
+              --header "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              --header 'Content-Type: application/json' \
+              --url $RELEASE_URL \
+              --data '{"state":"closed"}'
+
+            REGEX_VERSION_NUM='^v[0-9]+.[0-9]+.[0-9]+$'
+
+            if [[ $CURRENT_TAG =~ $REGEX_VERSION_NUM ]]; then
+              NEXT_MINOR_VERSION=$(echo $CURRENT_TAG | cut -d. -f-2 | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g').0
+              NEXT_PATCH_VERSION=$(echo $CURRENT_TAG | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
+
+              curl --request POST \
+                --header "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                --header 'Accept: application/vnd.github.v3+json' \
+                --url $MILESTONES_URL \
+                --data '{"title":"Release '$NEXT_MINOR_VERSION'"}'
+              curl --request POST \
+                --header "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                --header 'Accept: application/vnd.github.v3+json' \
+                --url $MILESTONES_URL \
+                --data '{"title":"Release '$NEXT_PATCH_VERSION'"}'
+            fi
+          fi
+        done
+      shell: bash
