@@ -20,11 +20,11 @@ runs:
       shell: bash
     - run: gren release --override
       env:
-        GREN_GITHUB_TOKEN: ${{ inputs.token }}
+        GREN_GITHUB_TOKEN: $GITHUB_TOKEN
       shell: bash
     - run: gren changelog --override
       env:
-        GREN_GITHUB_TOKEN: ${{ inputs.token }}
+        GREN_GITHUB_TOKEN: $GITHUB_TOKEN
       shell: bash
     - run: |
         CURRENT_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
@@ -38,7 +38,7 @@ runs:
         git push && git push --tags -f
 
         MILESTONES_URL=https://api.github.com/repos/${{ github.repository }}/milestones
-        MILESTONES_JSON=$(curl --header "Authorization: Bearer ${{ inputs.token }}" $MILESTONES_URL)
+        MILESTONES_JSON=$(curl --header "Authorization: Bearer $GITHUB_TOKEN" $MILESTONES_URL)
 
         for row in $(echo "${MILESTONES_JSON}" | jq -r '.[] | @base64'); do
           _jq() {
@@ -52,7 +52,7 @@ runs:
 
           if [ "$RELEASE_TITLE" = "$CURRENT_RELEASE" ] && [ $OPEN_ISSUES -eq 0 ]; then
             curl --request PATCH \
-              --header "Authorization: Bearer ${{ inputs.token }}" \
+              --header "Authorization: Bearer $GITHUB_TOKEN" \
               --header 'Content-Type: application/json' \
               --url $RELEASE_URL \
               --data '{"state":"closed"}'
@@ -64,12 +64,12 @@ runs:
               NEXT_PATCH_VERSION=$(echo $CURRENT_TAG | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
 
               curl --request POST \
-                --header "Authorization: Bearer ${{ inputs.token }}" \
+                --header "Authorization: Bearer $GITHUB_TOKEN" \
                 --header 'Accept: application/vnd.github.v3+json' \
                 --url $MILESTONES_URL \
                 --data '{"title":"Release '$NEXT_MINOR_VERSION'"}'
               curl --request POST \
-                --header "Authorization: Bearer ${{ inputs.token }}" \
+                --header "Authorization: Bearer $GITHUB_TOKEN" \
                 --header 'Accept: application/vnd.github.v3+json' \
                 --url $MILESTONES_URL \
                 --data '{"title":"Release '$NEXT_PATCH_VERSION'"}'

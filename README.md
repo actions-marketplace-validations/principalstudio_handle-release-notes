@@ -24,5 +24,6 @@ jobs:
         uses: principalstudio/handle-release-notes@v1
         with:
           main-branch: master
-          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
