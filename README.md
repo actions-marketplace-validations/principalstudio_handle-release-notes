@@ -21,7 +21,8 @@ jobs:
       - name: Setup node/npm
         uses: actions/setup-node@v1
       - name: principal-post-release-action
-        uses: principalstudio/principal-release-notes-action@v1
+        uses: principalstudio/principal-release-notes-action@v2
         with:
           main-branch: master
+          token: ${{ secrets.GITHUB_TOKEN }}
 ```
