@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 name: 'principal-handle-release-notes'
-=======
-name: 'principalstudio-handle-release-notes'
->>>>>>> f4db0fec33802757114414ea5fc1ce84d8bb6278
 description: 'Very opiniated GitHub action to handle release notes and milestones'
 author: Principal Studio
 branding:
